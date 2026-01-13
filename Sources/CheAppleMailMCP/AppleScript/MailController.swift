@@ -636,6 +636,472 @@ actor MailController {
         return try runScript(script)
     }
 
+    /// Get detailed rule information
+    func getRuleDetails(name: String) throws -> [String: Any] {
+        let enabledScript = """
+        tell application "Mail"
+            get enabled of rule "\(escapeForAppleScript(name))"
+        end tell
+        """
+
+        let allConditionsScript = """
+        tell application "Mail"
+            get all conditions must be met of rule "\(escapeForAppleScript(name))"
+        end tell
+        """
+
+        let stopScript = """
+        tell application "Mail"
+            get stop evaluating rules of rule "\(escapeForAppleScript(name))"
+        end tell
+        """
+
+        let enabled = try runScript(enabledScript) == "true"
+        let allConditions = try runScript(allConditionsScript) == "true"
+        let stopEvaluating = try runScript(stopScript) == "true"
+
+        return [
+            "name": name,
+            "enabled": enabled,
+            "all_conditions_must_be_met": allConditions,
+            "stop_evaluating_rules": stopEvaluating
+        ]
+    }
+
+    /// Create a simple mail rule
+    func createRule(name: String, conditions: [[String: String]], actions: [String: Any]) throws -> String {
+        var script = """
+        tell application "Mail"
+            set newRule to make new rule with properties {name:"\(escapeForAppleScript(name))"}
+        """
+
+        // Add conditions
+        for condition in conditions {
+            if let header = condition["header"],
+               let qualifier = condition["qualifier"],
+               let expression = condition["expression"] {
+                script += """
+                    tell newRule
+                        make new rule condition with properties {rule type:header rule, header:"\(escapeForAppleScript(header))", qualifier:\(qualifier), expression:"\(escapeForAppleScript(expression))"}
+                    end tell
+                """
+            }
+        }
+
+        // Add actions
+        if let moveMailbox = actions["move_message"] as? String {
+            script += """
+                set move message of newRule to mailbox "\(escapeForAppleScript(moveMailbox))"
+            """
+        }
+
+        if let markRead = actions["mark_read"] as? Bool {
+            script += """
+                set mark read of newRule to \(markRead)
+            """
+        }
+
+        if let markFlagged = actions["mark_flagged"] as? Bool {
+            script += """
+                set mark flagged of newRule to \(markFlagged)
+            """
+        }
+
+        if let deleteMessage = actions["delete_message"] as? Bool {
+            script += """
+                set delete message of newRule to \(deleteMessage)
+            """
+        }
+
+        script += """
+            return "Rule '\(escapeForAppleScript(name))' created successfully"
+        end tell
+        """
+
+        return try runScript(script)
+    }
+
+    /// Delete a rule
+    func deleteRule(name: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            delete rule "\(escapeForAppleScript(name))"
+            return "Rule '\(escapeForAppleScript(name))' deleted"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    // MARK: - Mail Check & Sync Operations
+
+    /// Check for new mail
+    func checkForNewMail(accountName: String? = nil) throws -> String {
+        let script: String
+        if let account = accountName {
+            script = """
+            tell application "Mail"
+                check for new mail for account "\(escapeForAppleScript(account))"
+                return "Checking for new mail in \(escapeForAppleScript(account))"
+            end tell
+            """
+        } else {
+            script = """
+            tell application "Mail"
+                check for new mail
+                return "Checking for new mail in all accounts"
+            end tell
+            """
+        }
+        return try runScript(script)
+    }
+
+    /// Synchronize IMAP account
+    func synchronizeAccount(accountName: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            synchronize account "\(escapeForAppleScript(accountName))"
+            return "Synchronizing account: \(escapeForAppleScript(accountName))"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    // MARK: - Advanced Email Operations
+
+    /// Copy email to another mailbox
+    func copyEmail(id: String, fromMailbox: String, toMailbox: String, accountName: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            set msg to message id \(id) of mailbox "\(escapeForAppleScript(fromMailbox))" of account "\(escapeForAppleScript(accountName))"
+            duplicate msg to mailbox "\(escapeForAppleScript(toMailbox))" of account "\(escapeForAppleScript(accountName))"
+            return "Email copied to \(escapeForAppleScript(toMailbox))"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    /// Set flag color (0-6: red, orange, yellow, green, blue, purple, gray; -1 to clear)
+    func setFlagColor(id: String, mailbox: String, accountName: String, colorIndex: Int) throws -> String {
+        let colors = ["red", "orange", "yellow", "green", "blue", "purple", "gray"]
+        let colorName = colorIndex >= 0 && colorIndex < colors.count ? colors[colorIndex] : "none"
+
+        let script = """
+        tell application "Mail"
+            set flag index of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))" to \(colorIndex)
+            return "Flag color set to \(colorName)"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    /// Set email background color
+    func setBackgroundColor(id: String, mailbox: String, accountName: String, color: String) throws -> String {
+        // Valid colors: blue, gray, green, none, orange, purple, red, yellow
+        let script = """
+        tell application "Mail"
+            set background color of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))" to \(color)
+            return "Background color set to \(color)"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    /// Mark email as junk or not junk
+    func markAsJunk(id: String, mailbox: String, accountName: String, isJunk: Bool) throws -> String {
+        let script = """
+        tell application "Mail"
+            set junk mail status of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))" to \(isJunk)
+            return "Email marked as \(isJunk ? "junk" : "not junk")"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    /// Get all email headers
+    func getEmailHeaders(id: String, mailbox: String, accountName: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            get all headers of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    /// Get email source (raw message)
+    func getEmailSource(id: String, mailbox: String, accountName: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            get source of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    /// Redirect email (different from forward - keeps original sender)
+    func redirectEmail(id: String, mailbox: String, accountName: String, to: [String]) throws -> String {
+        var script = """
+        tell application "Mail"
+            set originalMsg to message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+            set redirectMsg to redirect originalMsg with opening window
+            tell redirectMsg
+        """
+
+        for recipient in to {
+            script += """
+                make new to recipient at end of to recipients with properties {address:"\(escapeForAppleScript(recipient))"}
+            """
+        }
+
+        script += """
+            end tell
+            send redirectMsg
+            return "Email redirected successfully"
+        end tell
+        """
+
+        return try runScript(script)
+    }
+
+    /// Get email metadata (was forwarded, replied to, redirected)
+    func getEmailMetadata(id: String, mailbox: String, accountName: String) throws -> [String: Any] {
+        let forwardedScript = """
+        tell application "Mail"
+            get was forwarded of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+        end tell
+        """
+
+        let repliedScript = """
+        tell application "Mail"
+            get was replied to of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+        end tell
+        """
+
+        let redirectedScript = """
+        tell application "Mail"
+            get was redirected of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+        end tell
+        """
+
+        let messageIdScript = """
+        tell application "Mail"
+            get message id of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+        end tell
+        """
+
+        let sizeScript = """
+        tell application "Mail"
+            get message size of message id \(id) of mailbox "\(escapeForAppleScript(mailbox))" of account "\(escapeForAppleScript(accountName))"
+        end tell
+        """
+
+        let wasForwarded = try runScript(forwardedScript) == "true"
+        let wasReplied = try runScript(repliedScript) == "true"
+        let wasRedirected = try runScript(redirectedScript) == "true"
+        let msgId = try runScript(messageIdScript)
+        let size = try runScript(sizeScript)
+
+        return [
+            "was_forwarded": wasForwarded,
+            "was_replied_to": wasReplied,
+            "was_redirected": wasRedirected,
+            "message_id": msgId,
+            "size_bytes": Int(size) ?? 0
+        ]
+    }
+
+    // MARK: - Signature Operations
+
+    /// List all signatures
+    func listSignatures() throws -> [[String: Any]] {
+        let namesScript = """
+        tell application "Mail"
+            get name of every signature
+        end tell
+        """
+
+        let names = try runScriptAsList(namesScript)
+
+        return names.map { name in
+            ["name": name]
+        }
+    }
+
+    /// Get signature content
+    func getSignature(name: String) throws -> [String: Any] {
+        let contentScript = """
+        tell application "Mail"
+            get content of signature "\(escapeForAppleScript(name))"
+        end tell
+        """
+
+        let content = try runScript(contentScript)
+
+        return [
+            "name": name,
+            "content": content
+        ]
+    }
+
+    // MARK: - SMTP Server Operations
+
+    /// List SMTP servers
+    func listSMTPServers() throws -> [[String: Any]] {
+        let namesScript = """
+        tell application "Mail"
+            get name of every smtp server
+        end tell
+        """
+
+        let serverNamesScript = """
+        tell application "Mail"
+            get server name of every smtp server
+        end tell
+        """
+
+        let names = try runScriptAsList(namesScript)
+        let serverNames = try runScriptAsList(serverNamesScript)
+
+        var servers: [[String: Any]] = []
+        for i in 0..<names.count {
+            var server: [String: Any] = ["name": names[i]]
+            if i < serverNames.count {
+                server["server_name"] = serverNames[i]
+            }
+            servers.append(server)
+        }
+
+        return servers
+    }
+
+    // MARK: - Special Mailboxes
+
+    /// Get special mailboxes (inbox, drafts, sent, trash, junk, outbox)
+    func getSpecialMailboxes() throws -> [String: Any] {
+        let inboxScript = """
+        tell application "Mail"
+            get name of inbox
+        end tell
+        """
+
+        let draftsScript = """
+        tell application "Mail"
+            get name of drafts mailbox
+        end tell
+        """
+
+        let sentScript = """
+        tell application "Mail"
+            get name of sent mailbox
+        end tell
+        """
+
+        let trashScript = """
+        tell application "Mail"
+            get name of trash mailbox
+        end tell
+        """
+
+        let junkScript = """
+        tell application "Mail"
+            get name of junk mailbox
+        end tell
+        """
+
+        let outboxScript = """
+        tell application "Mail"
+            get name of outbox
+        end tell
+        """
+
+        return [
+            "inbox": try runScript(inboxScript),
+            "drafts": try runScript(draftsScript),
+            "sent": try runScript(sentScript),
+            "trash": try runScript(trashScript),
+            "junk": try runScript(junkScript),
+            "outbox": try runScript(outboxScript)
+        ]
+    }
+
+    // MARK: - Address Operations
+
+    /// Extract name from email address
+    func extractNameFromAddress(address: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            extract name from "\(escapeForAppleScript(address))"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    /// Extract email address from full address string
+    func extractAddressFrom(address: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            extract address from "\(escapeForAppleScript(address))"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    // MARK: - Application Operations
+
+    /// Get Mail application info
+    func getMailAppInfo() throws -> [String: Any] {
+        let versionScript = """
+        tell application "Mail"
+            get application version
+        end tell
+        """
+
+        let fetchIntervalScript = """
+        tell application "Mail"
+            get fetch interval
+        end tell
+        """
+
+        let backgroundCountScript = """
+        tell application "Mail"
+            get background activity count
+        end tell
+        """
+
+        let version = try runScript(versionScript)
+        let fetchInterval = try runScript(fetchIntervalScript)
+        let bgCount = try runScript(backgroundCountScript)
+
+        return [
+            "version": version,
+            "fetch_interval_minutes": Int(fetchInterval) ?? -1,
+            "background_activity_count": Int(bgCount) ?? 0
+        ]
+    }
+
+    /// Open mailto URL
+    func openMailtoURL(url: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            mailto "\(escapeForAppleScript(url))"
+            return "Opened mailto URL"
+        end tell
+        """
+        return try runScript(script)
+    }
+
+    // MARK: - Import/Export Operations
+
+    /// Import mailbox from file
+    func importMailbox(path: String) throws -> String {
+        let script = """
+        tell application "Mail"
+            import Mail mailbox POSIX file "\(escapeForAppleScript(path))"
+            return "Mailbox imported from \(escapeForAppleScript(path))"
+        end tell
+        """
+        return try runScript(script)
+    }
+
     // MARK: - Helpers
 
     /// Escape special characters for AppleScript strings

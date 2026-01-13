@@ -321,6 +321,262 @@ class CheAppleMailMCPServer {
                     "required": .array([.string("name"), .string("enabled")])
                 ])
             ),
+            Tool(
+                name: "get_rule_details",
+                description: "Get detailed information about a mail rule",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "name": .object(["type": .string("string"), "description": .string("Name of the rule")])
+                    ]),
+                    "required": .array([.string("name")])
+                ])
+            ),
+            Tool(
+                name: "create_rule",
+                description: "Create a new mail rule",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "name": .object(["type": .string("string"), "description": .string("Name of the rule")]),
+                        "conditions": .object(["type": .string("array"), "description": .string("Array of conditions with header, qualifier, expression")]),
+                        "actions": .object(["type": .string("object"), "description": .string("Actions: move_message, mark_read, mark_flagged, delete_message")])
+                    ]),
+                    "required": .array([.string("name")])
+                ])
+            ),
+            Tool(
+                name: "delete_rule",
+                description: "Delete a mail rule",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "name": .object(["type": .string("string"), "description": .string("Name of the rule to delete")])
+                    ]),
+                    "required": .array([.string("name")])
+                ])
+            ),
+
+            // Mail Check & Sync Tools
+            Tool(
+                name: "check_for_new_mail",
+                description: "Trigger a check for new email",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "account_name": .object(["type": .string("string"), "description": .string("Account to check (optional, checks all if omitted)")])
+                    ])
+                ])
+            ),
+            Tool(
+                name: "synchronize_account",
+                description: "Synchronize an IMAP account with the server",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "account_name": .object(["type": .string("string"), "description": .string("Account to synchronize")])
+                    ]),
+                    "required": .array([.string("account_name")])
+                ])
+            ),
+
+            // Advanced Email Tools
+            Tool(
+                name: "copy_email",
+                description: "Copy an email to another mailbox",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "from_mailbox": .object(["type": .string("string"), "description": .string("Source mailbox")]),
+                        "to_mailbox": .object(["type": .string("string"), "description": .string("Destination mailbox")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")])
+                    ]),
+                    "required": .array([.string("id"), .string("from_mailbox"), .string("to_mailbox"), .string("account_name")])
+                ])
+            ),
+            Tool(
+                name: "set_flag_color",
+                description: "Set the flag color of an email (0=red, 1=orange, 2=yellow, 3=green, 4=blue, 5=purple, 6=gray, -1=clear)",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "mailbox": .object(["type": .string("string"), "description": .string("Mailbox name")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")]),
+                        "color_index": .object(["type": .string("integer"), "description": .string("Flag color index (0-6, or -1 to clear)")])
+                    ]),
+                    "required": .array([.string("id"), .string("mailbox"), .string("account_name"), .string("color_index")])
+                ])
+            ),
+            Tool(
+                name: "set_background_color",
+                description: "Set the background color of an email (blue, gray, green, none, orange, purple, red, yellow)",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "mailbox": .object(["type": .string("string"), "description": .string("Mailbox name")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")]),
+                        "color": .object(["type": .string("string"), "description": .string("Background color: blue, gray, green, none, orange, purple, red, yellow")])
+                    ]),
+                    "required": .array([.string("id"), .string("mailbox"), .string("account_name"), .string("color")])
+                ])
+            ),
+            Tool(
+                name: "mark_as_junk",
+                description: "Mark an email as junk or not junk",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "mailbox": .object(["type": .string("string"), "description": .string("Mailbox name")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")]),
+                        "is_junk": .object(["type": .string("boolean"), "description": .string("true=junk, false=not junk")])
+                    ]),
+                    "required": .array([.string("id"), .string("mailbox"), .string("account_name"), .string("is_junk")])
+                ])
+            ),
+            Tool(
+                name: "get_email_headers",
+                description: "Get all headers of an email",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "mailbox": .object(["type": .string("string"), "description": .string("Mailbox name")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")])
+                    ]),
+                    "required": .array([.string("id"), .string("mailbox"), .string("account_name")])
+                ])
+            ),
+            Tool(
+                name: "get_email_source",
+                description: "Get the raw source of an email",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "mailbox": .object(["type": .string("string"), "description": .string("Mailbox name")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")])
+                    ]),
+                    "required": .array([.string("id"), .string("mailbox"), .string("account_name")])
+                ])
+            ),
+            Tool(
+                name: "redirect_email",
+                description: "Redirect an email (keeps original sender, different from forward)",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "mailbox": .object(["type": .string("string"), "description": .string("Mailbox name")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")]),
+                        "to": .object(["type": .string("array"), "items": .object(["type": .string("string")]), "description": .string("Recipients to redirect to")])
+                    ]),
+                    "required": .array([.string("id"), .string("mailbox"), .string("account_name"), .string("to")])
+                ])
+            ),
+            Tool(
+                name: "get_email_metadata",
+                description: "Get email metadata (was forwarded, replied, redirected, size)",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "id": .object(["type": .string("string"), "description": .string("The email ID")]),
+                        "mailbox": .object(["type": .string("string"), "description": .string("Mailbox name")]),
+                        "account_name": .object(["type": .string("string"), "description": .string("The mail account")])
+                    ]),
+                    "required": .array([.string("id"), .string("mailbox"), .string("account_name")])
+                ])
+            ),
+
+            // Signature Tools
+            Tool(
+                name: "list_signatures",
+                description: "List all email signatures",
+                inputSchema: .object(["type": .string("object"), "properties": .object([:])])
+            ),
+            Tool(
+                name: "get_signature",
+                description: "Get the content of a signature",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "name": .object(["type": .string("string"), "description": .string("Name of the signature")])
+                    ]),
+                    "required": .array([.string("name")])
+                ])
+            ),
+
+            // SMTP Server Tools
+            Tool(
+                name: "list_smtp_servers",
+                description: "List all SMTP servers",
+                inputSchema: .object(["type": .string("object"), "properties": .object([:])])
+            ),
+
+            // Special Mailboxes
+            Tool(
+                name: "get_special_mailboxes",
+                description: "Get special mailbox names (inbox, drafts, sent, trash, junk, outbox)",
+                inputSchema: .object(["type": .string("object"), "properties": .object([:])])
+            ),
+
+            // Address Tools
+            Tool(
+                name: "extract_name_from_address",
+                description: "Extract the name from a full email address (e.g., 'John Doe <john@example.com>' -> 'John Doe')",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "address": .object(["type": .string("string"), "description": .string("Full email address")])
+                    ]),
+                    "required": .array([.string("address")])
+                ])
+            ),
+            Tool(
+                name: "extract_address",
+                description: "Extract the email address from a full address string (e.g., 'John Doe <john@example.com>' -> 'john@example.com')",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "address": .object(["type": .string("string"), "description": .string("Full email address")])
+                    ]),
+                    "required": .array([.string("address")])
+                ])
+            ),
+
+            // Application Tools
+            Tool(
+                name: "get_mail_app_info",
+                description: "Get Mail application information (version, fetch interval, background activity)",
+                inputSchema: .object(["type": .string("object"), "properties": .object([:])])
+            ),
+            Tool(
+                name: "open_mailto",
+                description: "Open a mailto URL to compose an email",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "url": .object(["type": .string("string"), "description": .string("mailto URL (e.g., 'mailto:test@example.com?subject=Hello')")])
+                    ]),
+                    "required": .array([.string("url")])
+                ])
+            ),
+
+            // Import Tools
+            Tool(
+                name: "import_mailbox",
+                description: "Import a mailbox from a file",
+                inputSchema: .object([
+                    "type": .string("object"),
+                    "properties": .object([
+                        "path": .object(["type": .string("string"), "description": .string("Path to the mailbox file to import")])
+                    ]),
+                    "required": .array([.string("path")])
+                ])
+            ),
         ]
     }
 
@@ -542,6 +798,179 @@ class CheAppleMailMCPServer {
             }
             return try await mailController.enableRule(name: name, enabled: enabled)
 
+        case "get_rule_details":
+            guard let name = arguments["name"]?.stringValue else {
+                throw MailError.invalidParameter("name is required")
+            }
+            let details = try await mailController.getRuleDetails(name: name)
+            return formatJSON(details)
+
+        case "create_rule":
+            guard let name = arguments["name"]?.stringValue else {
+                throw MailError.invalidParameter("name is required")
+            }
+            let conditions = arguments["conditions"]?.arrayValue?.compactMap { value -> [String: String]? in
+                guard let obj = value.objectValue else { return nil }
+                var dict: [String: String] = [:]
+                for (k, v) in obj {
+                    if let str = v.stringValue {
+                        dict[k] = str
+                    }
+                }
+                return dict
+            } ?? []
+            let actions = arguments["actions"]?.objectValue?.reduce(into: [String: Any]()) { result, pair in
+                if let str = pair.value.stringValue {
+                    result[pair.key] = str
+                } else if let bool = pair.value.boolValue {
+                    result[pair.key] = bool
+                }
+            } ?? [:]
+            return try await mailController.createRule(name: name, conditions: conditions, actions: actions)
+
+        case "delete_rule":
+            guard let name = arguments["name"]?.stringValue else {
+                throw MailError.invalidParameter("name is required")
+            }
+            return try await mailController.deleteRule(name: name)
+
+        // Mail Check & Sync Tools
+        case "check_for_new_mail":
+            let accountName = arguments["account_name"]?.stringValue
+            return try await mailController.checkForNewMail(accountName: accountName)
+
+        case "synchronize_account":
+            guard let accountName = arguments["account_name"]?.stringValue else {
+                throw MailError.invalidParameter("account_name is required")
+            }
+            return try await mailController.synchronizeAccount(accountName: accountName)
+
+        // Advanced Email Tools
+        case "copy_email":
+            guard let id = arguments["id"]?.stringValue,
+                  let fromMailbox = arguments["from_mailbox"]?.stringValue,
+                  let toMailbox = arguments["to_mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue else {
+                throw MailError.invalidParameter("id, from_mailbox, to_mailbox, and account_name are required")
+            }
+            return try await mailController.copyEmail(id: id, fromMailbox: fromMailbox, toMailbox: toMailbox, accountName: accountName)
+
+        case "set_flag_color":
+            guard let id = arguments["id"]?.stringValue,
+                  let mailbox = arguments["mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue,
+                  let colorIndex = arguments["color_index"]?.intValue else {
+                throw MailError.invalidParameter("id, mailbox, account_name, and color_index are required")
+            }
+            return try await mailController.setFlagColor(id: id, mailbox: mailbox, accountName: accountName, colorIndex: colorIndex)
+
+        case "set_background_color":
+            guard let id = arguments["id"]?.stringValue,
+                  let mailbox = arguments["mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue,
+                  let color = arguments["color"]?.stringValue else {
+                throw MailError.invalidParameter("id, mailbox, account_name, and color are required")
+            }
+            return try await mailController.setBackgroundColor(id: id, mailbox: mailbox, accountName: accountName, color: color)
+
+        case "mark_as_junk":
+            guard let id = arguments["id"]?.stringValue,
+                  let mailbox = arguments["mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue,
+                  let isJunk = arguments["is_junk"]?.boolValue else {
+                throw MailError.invalidParameter("id, mailbox, account_name, and is_junk are required")
+            }
+            return try await mailController.markAsJunk(id: id, mailbox: mailbox, accountName: accountName, isJunk: isJunk)
+
+        case "get_email_headers":
+            guard let id = arguments["id"]?.stringValue,
+                  let mailbox = arguments["mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue else {
+                throw MailError.invalidParameter("id, mailbox, and account_name are required")
+            }
+            return try await mailController.getEmailHeaders(id: id, mailbox: mailbox, accountName: accountName)
+
+        case "get_email_source":
+            guard let id = arguments["id"]?.stringValue,
+                  let mailbox = arguments["mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue else {
+                throw MailError.invalidParameter("id, mailbox, and account_name are required")
+            }
+            return try await mailController.getEmailSource(id: id, mailbox: mailbox, accountName: accountName)
+
+        case "redirect_email":
+            guard let id = arguments["id"]?.stringValue,
+                  let mailbox = arguments["mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue,
+                  let toArray = arguments["to"]?.arrayValue else {
+                throw MailError.invalidParameter("id, mailbox, account_name, and to are required")
+            }
+            let to = toArray.compactMap { $0.stringValue }
+            return try await mailController.redirectEmail(id: id, mailbox: mailbox, accountName: accountName, to: to)
+
+        case "get_email_metadata":
+            guard let id = arguments["id"]?.stringValue,
+                  let mailbox = arguments["mailbox"]?.stringValue,
+                  let accountName = arguments["account_name"]?.stringValue else {
+                throw MailError.invalidParameter("id, mailbox, and account_name are required")
+            }
+            let metadata = try await mailController.getEmailMetadata(id: id, mailbox: mailbox, accountName: accountName)
+            return formatJSON(metadata)
+
+        // Signature Tools
+        case "list_signatures":
+            let signatures = try await mailController.listSignatures()
+            return formatJSON(signatures)
+
+        case "get_signature":
+            guard let name = arguments["name"]?.stringValue else {
+                throw MailError.invalidParameter("name is required")
+            }
+            let signature = try await mailController.getSignature(name: name)
+            return formatJSON(signature)
+
+        // SMTP Server Tools
+        case "list_smtp_servers":
+            let servers = try await mailController.listSMTPServers()
+            return formatJSON(servers)
+
+        // Special Mailboxes
+        case "get_special_mailboxes":
+            let mailboxes = try await mailController.getSpecialMailboxes()
+            return formatJSON(mailboxes)
+
+        // Address Tools
+        case "extract_name_from_address":
+            guard let address = arguments["address"]?.stringValue else {
+                throw MailError.invalidParameter("address is required")
+            }
+            let name = try await mailController.extractNameFromAddress(address: address)
+            return name
+
+        case "extract_address":
+            guard let address = arguments["address"]?.stringValue else {
+                throw MailError.invalidParameter("address is required")
+            }
+            return try await mailController.extractAddressFrom(address: address)
+
+        // Application Tools
+        case "get_mail_app_info":
+            let info = try await mailController.getMailAppInfo()
+            return formatJSON(info)
+
+        case "open_mailto":
+            guard let url = arguments["url"]?.stringValue else {
+                throw MailError.invalidParameter("url is required")
+            }
+            return try await mailController.openMailtoURL(url: url)
+
+        // Import Tools
+        case "import_mailbox":
+            guard let path = arguments["path"]?.stringValue else {
+                throw MailError.invalidParameter("path is required")
+            }
+            return try await mailController.importMailbox(path: path)
+
         default:
             throw MailError.invalidParameter("Unknown tool: \(name)")
         }
@@ -581,6 +1010,11 @@ extension Value {
 
     var arrayValue: [Value]? {
         if case .array(let arr) = self { return arr }
+        return nil
+    }
+
+    var objectValue: [String: Value]? {
+        if case .object(let obj) = self { return obj }
         return nil
     }
 }

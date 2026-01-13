@@ -33,7 +33,7 @@ Comprehensive Apple Mail management via MCP and AppleScript.
 ## Requirements
 
 - macOS 13.0+
-- Xcode Command Line Tools
+- Xcode Command Line Tools (for building)
 - Apple Mail configured with at least one account
 
 ## Installation
@@ -41,6 +41,7 @@ Comprehensive Apple Mail management via MCP and AppleScript.
 ### 1. Clone and Build
 
 ```bash
+# Clone the repository
 git clone https://github.com/kiki830621/che-apple-mail-mcp.git
 cd che-apple-mail-mcp
 
@@ -51,9 +52,9 @@ swift build -c release
 ls -la .build/release/CheAppleMailMCP
 ```
 
-### 2. Configure MCP Client
+### 2. Configure (Choose One)
 
-#### Option A: Claude Desktop
+#### Option A: For Claude Desktop
 
 Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -67,7 +68,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-#### Option B: Claude Code
+#### Option B: For Claude Code (CLI)
 
 Edit `~/.claude/settings.json`:
 
@@ -81,7 +82,8 @@ Edit `~/.claude/settings.json`:
 }
 ```
 
-Or use CLI:
+Or use the Claude Code CLI:
+
 ```bash
 claude mcp add che-apple-mail-mcp /path/to/che-apple-mail-mcp/.build/release/CheAppleMailMCP
 ```
@@ -90,14 +92,33 @@ Replace `/path/to/` with your actual path.
 
 ### 3. Grant Automation Permissions
 
-On first use, macOS will prompt for Automation permission to control Mail.app:
+**This step is required for the MCP to control Apple Mail.**
 
 1. Open System Settings:
    ```bash
    open "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation"
    ```
 
-2. Allow CheAppleMailMCP to control Mail.app
+2. Click the 🔒 lock icon and enter your password
+
+3. Find **CheAppleMailMCP** in the list and ensure it has permission to control **Mail.app**
+
+   > **Note**: If CheAppleMailMCP is not in the list, run it once first:
+   > ```bash
+   > ./.build/release/CheAppleMailMCP
+   > ```
+   > Then press `Ctrl+C` to stop it, and check the Automation settings again.
+
+4. Also add these apps if using Claude Code from terminal:
+
+   | App | Path |
+   |-----|------|
+   | **Terminal** | `/Applications/Utilities/Terminal.app` |
+   | **iTerm** (if using) | `/Applications/iTerm.app` |
+
+   > **Tip**: Press `Cmd+Shift+G` in the file picker to paste paths directly.
+
+5. Ensure all toggles are **ON** ✅
 
 ### 4. Restart
 
@@ -108,26 +129,51 @@ osascript -e 'quit app "Claude"' && sleep 2 && open -a "Claude"
 
 For Claude Code:
 ```bash
-# Start a new session
+# Start a new Claude Code session
 claude
 ```
 
 ## Usage Examples
 
+### In Claude Desktop
 ```
 "List all my mail accounts"
 "Show emails in INBOX of Gmail"
-"Search for emails about 'meeting' in INBOX"
+"Search for emails about 'meeting'"
 "Send an email to john@example.com with subject 'Hello'"
-"Mark that email as read"
-"Move email to Archive folder"
-"List my mail rules"
 ```
+
+### In Claude Code
+```
+"Use list_accounts to show my mail accounts"
+"Use list_emails to show INBOX of iCloud"
+"Use search_emails to find emails about 'project'"
+```
+
+## Troubleshooting
+
+### "Server disconnected" error
+- Make sure the binary was built successfully
+- Run `swift build -c release` again if needed
+
+### "Not allowed to send Apple events" error
+- Open System Settings → Privacy & Security → Automation
+- Ensure CheAppleMailMCP has permission to control Mail.app
+- Also add your terminal app (Terminal.app or iTerm) if using Claude Code
+- Restart after adding permissions
+
+### Mail.app not responding
+- Make sure Apple Mail is running
+- Check that at least one mail account is configured in Mail.app
+
+### Commands timing out
+- Ensure Mail.app is running and responsive
+- Large mailboxes may take longer to query
 
 ## Technical Details
 
 - Built with Swift and [MCP Swift SDK](https://github.com/modelcontextprotocol/swift-sdk) v0.10.0
-- Uses AppleScript via NSAppleScript for Mail.app automation
+- Uses AppleScript via `NSAppleScript` for Mail.app automation
 - Runs as stdio transport MCP server
 
 ## Comparison with other Apple Mail MCPs

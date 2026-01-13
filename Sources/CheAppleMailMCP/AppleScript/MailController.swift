@@ -913,6 +913,18 @@ actor MailController {
 
     /// List all signatures
     func listSignatures() throws -> [[String: Any]] {
+        // First check if there are any signatures
+        let countScript = """
+        tell application "Mail"
+            get count of signatures
+        end tell
+        """
+
+        let countResult = try runScript(countScript)
+        guard let count = Int(countResult), count > 0 else {
+            return []
+        }
+
         let namesScript = """
         tell application "Mail"
             get name of every signature

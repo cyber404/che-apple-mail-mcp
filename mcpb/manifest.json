@@ -1,0 +1,81 @@
+{
+  "manifest_version": "0.3",
+  "name": "che-apple-mail-mcp",
+  "display_name": "Apple Mail Manager",
+  "version": "1.0.0",
+  "description": "Native AppleScript integration for Apple Mail with 42 comprehensive tools",
+  "long_description": "The most comprehensive Apple Mail MCP server providing 42 tools covering nearly all Mail.app scripting capabilities. Features include account management, mailbox CRUD, email operations with 7 flag colors and background colors, compose/reply/forward/redirect, attachments, VIP management, mail rules, signatures, SMTP servers, and sync operations. Uses native AppleScript for reliable integration. Requires macOS 13.0 or later.",
+  "author": {
+    "name": "Che Cheng",
+    "url": "https://github.com/kiki830621"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiki830621/che-apple-mail-mcp.git"
+  },
+  "homepage": "https://github.com/kiki830621/che-apple-mail-mcp",
+  "support": "https://github.com/kiki830621/che-apple-mail-mcp/issues",
+  "icon": "icon.png",
+  "keywords": ["apple-mail", "email", "mail", "macos", "applescript", "productivity"],
+  "license": "MIT",
+  "privacy_policies": ["https://github.com/kiki830621/che-apple-mail-mcp/blob/main/mcpb/PRIVACY.md"],
+  "server": {
+    "type": "binary",
+    "entry_point": "server/CheAppleMailMCP",
+    "mcp_config": {
+      "command": "${__dirname}/server/CheAppleMailMCP",
+      "args": [],
+      "env": {}
+    }
+  },
+  "tools": [
+    { "name": "list_accounts", "description": "List all mail accounts" },
+    { "name": "get_account_info", "description": "Get account details" },
+    { "name": "list_mailboxes", "description": "List all mailboxes (folders)" },
+    { "name": "create_mailbox", "description": "Create a new mailbox" },
+    { "name": "delete_mailbox", "description": "Delete a mailbox" },
+    { "name": "get_special_mailboxes", "description": "Get special mailbox names" },
+    { "name": "list_emails", "description": "List emails in a mailbox" },
+    { "name": "get_email", "description": "Get full email content" },
+    { "name": "search_emails", "description": "Search by subject/content" },
+    { "name": "get_unread_count", "description": "Get unread count" },
+    { "name": "get_email_headers", "description": "Get all email headers" },
+    { "name": "get_email_source", "description": "Get raw email source" },
+    { "name": "get_email_metadata", "description": "Get metadata (forwarded, replied, size)" },
+    { "name": "mark_read", "description": "Mark as read/unread" },
+    { "name": "flag_email", "description": "Flag/unflag email" },
+    { "name": "set_flag_color", "description": "Set flag color (7 colors)" },
+    { "name": "set_background_color", "description": "Set email background color" },
+    { "name": "mark_as_junk", "description": "Mark as junk/not junk" },
+    { "name": "move_email", "description": "Move to another mailbox" },
+    { "name": "copy_email", "description": "Copy to another mailbox" },
+    { "name": "delete_email", "description": "Delete email (to trash)" },
+    { "name": "compose_email", "description": "Send new email" },
+    { "name": "reply_email", "description": "Reply to email" },
+    { "name": "forward_email", "description": "Forward email" },
+    { "name": "redirect_email", "description": "Redirect email (keeps original sender)" },
+    { "name": "open_mailto", "description": "Open mailto URL" },
+    { "name": "list_drafts", "description": "List draft emails" },
+    { "name": "create_draft", "description": "Create a draft" },
+    { "name": "list_attachments", "description": "List email attachments" },
+    { "name": "save_attachment", "description": "Save attachment to disk" },
+    { "name": "list_vip_senders", "description": "List VIP senders" },
+    { "name": "list_rules", "description": "List mail rules" },
+    { "name": "get_rule_details", "description": "Get rule details" },
+    { "name": "create_rule", "description": "Create a new rule" },
+    { "name": "delete_rule", "description": "Delete a rule" },
+    { "name": "enable_rule", "description": "Enable/disable a rule" },
+    { "name": "list_signatures", "description": "List email signatures" },
+    { "name": "get_signature", "description": "Get signature content" },
+    { "name": "list_smtp_servers", "description": "List SMTP servers" },
+    { "name": "check_for_new_mail", "description": "Check for new mail" },
+    { "name": "synchronize_account", "description": "Sync IMAP account" },
+    { "name": "extract_name_from_address", "description": "Extract name from email address" },
+    { "name": "extract_address", "description": "Extract email from full address" },
+    { "name": "get_mail_app_info", "description": "Get Mail.app info" },
+    { "name": "import_mailbox", "description": "Import mailbox from file" }
+  ],
+  "compatibility": {
+    "platforms": ["darwin"]
+  }
+}

@@ -36,9 +36,13 @@ git clone https://github.com/kiki830621/che-apple-mail-mcp.git
 cd che-apple-mail-mcp
 swift build -c release
 
-# 加入 Claude Code
-claude mcp add che-apple-mail-mcp "$(pwd)/.build/release/CheAppleMailMCP"
+# 複製到 ~/bin 並加入 Claude Code（user scope = 所有專案都可使用）
+mkdir -p ~/bin
+cp .build/release/CheAppleMailMCP ~/bin/
+claude mcp add --scope user --transport stdio che-apple-mail-mcp -- ~/bin/CheAppleMailMCP
 ```
+
+> **💡 提示：** 請將 binary 安裝到本機目錄如 `~/bin/`。避免放在雲端同步資料夾（Dropbox、iCloud、OneDrive），否則檔案同步可能造成 MCP 連線逾時。
 
 然後在 **系統設定 > 隱私權與安全性 > 自動化** 中授予權限。
 
@@ -232,7 +236,10 @@ swift build -c release
 #### Claude Code (CLI)
 
 ```bash
-claude mcp add che-apple-mail-mcp /完整路徑/che-apple-mail-mcp/.build/release/CheAppleMailMCP
+# 複製到 ~/bin 並註冊（user scope = 所有專案都可使用）
+mkdir -p ~/bin
+cp .build/release/CheAppleMailMCP ~/bin/
+claude mcp add --scope user --transport stdio che-apple-mail-mcp -- ~/bin/CheAppleMailMCP
 ```
 
 ### 步驟 3：授予權限

@@ -36,9 +36,13 @@ git clone https://github.com/kiki830621/che-apple-mail-mcp.git
 cd che-apple-mail-mcp
 swift build -c release
 
-# Add to Claude Code
-claude mcp add che-apple-mail-mcp "$(pwd)/.build/release/CheAppleMailMCP"
+# Copy to ~/bin and add to Claude Code (user scope = available in all projects)
+mkdir -p ~/bin
+cp .build/release/CheAppleMailMCP ~/bin/
+claude mcp add --scope user --transport stdio che-apple-mail-mcp -- ~/bin/CheAppleMailMCP
 ```
+
+> **💡 Tip:** Always install the binary to a local directory like `~/bin/`. Avoid placing it in cloud-synced folders (Dropbox, iCloud, OneDrive) as file sync operations can cause MCP connection timeouts.
 
 Then grant Automation permission in **System Settings > Privacy & Security > Automation**.
 
@@ -232,7 +236,10 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 #### For Claude Code (CLI)
 
 ```bash
-claude mcp add che-apple-mail-mcp /full/path/to/che-apple-mail-mcp/.build/release/CheAppleMailMCP
+# Copy to ~/bin and register (user scope = available in all projects)
+mkdir -p ~/bin
+cp .build/release/CheAppleMailMCP ~/bin/
+claude mcp add --scope user --transport stdio che-apple-mail-mcp -- ~/bin/CheAppleMailMCP
 ```
 
 ### Step 3: Grant Permissions
